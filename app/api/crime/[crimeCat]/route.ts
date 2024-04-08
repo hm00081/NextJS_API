@@ -4,12 +4,14 @@ import data from '../../../data/police.json';
 // GET method
 export async function GET(req: NextRequest, context: any) {
     const { crimeCat } = context.params;
+    //@ts-ignore
     const filteredData = data.filter((item) => item.crimeMain === crimeCat || item.crimeSub === crimeCat);
     return NextResponse.json(filteredData);
 }
 // POST method
 export async function POST(req: NextRequest, context: any) {
     const { crimeCat } = context.params;
+    //@ts-ignore
     const filteredData = data.filter((item) => item.crimeMain === crimeCat || item.crimeSub === crimeCat);
     return NextResponse.json(filteredData);
 }
