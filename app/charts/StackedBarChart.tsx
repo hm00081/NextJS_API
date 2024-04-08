@@ -5,22 +5,27 @@ import { TitleComponent, TooltipComponent, GridComponent, DatasetComponent, Tran
 import { BarChart, LineChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { EChartsType } from 'echarts';
+import { CrimeData } from '../types/index';
 
 echarts.use([TitleComponent, TooltipComponent, GridComponent, DatasetComponent, TransformComponent, BarChart, LineChart, CanvasRenderer]);
 
-interface CrimeDataItem {
-    [key: string]: number | string;
-}
-
 interface StackedBarChartProps {
-    data: CrimeDataItem[];
+    data: CrimeData['crimes'];
 }
 
 const StackedBarChart: React.FC<StackedBarChartProps> = ({ data }) => {
-    const chartRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         const chartDom = document.getElementById('main');
         const myChart = echarts.init(chartDom);
+        const uniqueCategories = Array.from(new Set(data.map((item) => item.crimeSub as string)));
+        console.log(uniqueCategories);
+        const maxValue = data.reduce((acc, item) => {
+            const itemValues = Object.keys(item)
+                .filter((key) => key !== 'crimeMain' && key !== 'crimeSub')
+                .map((key) => Number(item[key]));
+            const maxItemValue = Math.max(...itemValues);
+            return Math.max(acc, maxItemValue);
+        }, 0);
 
         // Prepare the data for ECharts
         const series = Object.keys(data[0])
@@ -33,12 +38,11 @@ const StackedBarChart: React.FC<StackedBarChartProps> = ({ data }) => {
                     emphasis: {
                         focus: 'series',
                     },
-                    //@ts-ignore
                     data: data.map((item) => item[key]),
                     markLine: {
                         data: [
                             { type: 'average', name: '평균값' },
-                            // 기타 markLine 설정...
+                            // 추후 기타 markLine 설정.
                         ],
                     },
                 };
@@ -62,15 +66,15 @@ const StackedBarChart: React.FC<StackedBarChartProps> = ({ data }) => {
             },
             xAxis: {
                 type: 'value',
+                //max: maxValue,
             },
             yAxis: {
                 type: 'category',
-                //@ts-ignore
-                data: data.map((item) => item.crimeSub),
+                data: uniqueCategories,
             },
             series,
         };
-
+        console.log(option.yAxis);
         myChart.setOption(option);
 
         return () => {
